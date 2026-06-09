@@ -1,1 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FinanGo — Controle Financeiro Mobile</title>
+  <style>
+    :root{
+      --bg:#070d0a;
+      --panel:#111914;
+      --panel2:#18231d;
+      --line:rgba(255,255,255,.08);
+      --white:#f7fff8;
+      --muted:#9aa79d;
+      --muted2:#6d7a70;
+      --lime:#c9ff2e;
+      --lime2:#a9ef18;
+      --red:#ff6b6b;
+      --green:#71ff9a;
+      --blue:#8eb8ff;
+      --yellow:#ffd76a;
+      --purple:#d7b5ff;
+      --black:#09100c;
+      font-family:-apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",Arial,sans-serif;
+    }
 
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:linear-gradient(180deg,#eef0ee,#d9dddb);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:18px;
+      color:var(--white);
+    }
+
+    .phone{
+      width:min(430px,100%);
+      height:min(920px,calc(100vh - 20px));
+      min-height:760px;
+      background:radial-gradient(circle at 10% 0%,rgba(201,255,46,.13),transparent 30%),var(--bg);
+      border-radius:42px;
+      overflow:hidden;
+      position:relative;
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow:0 28px 90px rgba(0,0,0,.38);
+    }
+
+    .app{
+      height:100%;
+      overflow:auto;
+      padding:20px 18px 104px;
+      scrollbar-width:none;
+    }
+    .app::-webkit-scrollbar{display:none}
+    .view{display:none;animation:fade .18s ease}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    .top{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px;
+    }
+    .profile{display:flex;align-items:center;gap:12px;min-width:0}
+    .avatar{
+      width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#e7ece8,#9aa79d);
+      display:grid;place-items:center;color:var(--black);font-weight:900;flex:none;
+    }
+    .avatar svg{width:30px;height:30px}
+    .hello small{display:block;color:var(--muted);font-size:13px;margin-bottom:2px}
+    .hello strong{display:block;font-size:20px;line-height:1.08;letter-spacing:-.5px}
+    .icon-btn{
+      width:48px;height:48px;border:0;border-radius:22px;background:rgba(255,255,255,.08);
+      color:var(--white);display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .balance-card{
+      margin-top:20px;border-radius:34px;background:
+      radial-gradient(circle at 88% 10%,rgba(255,255,255,.55),transparent 16%),
+      linear-gradient(135deg,var(--lime),var(--lime2) 76%,#e3ff68);
+      color:var(--black);padding:22px;position:relative;overflow:hidden;
+      box-shadow:0 22px 50px rgba(201,255,46,.18);
+    }
+    .balance-card:after{
+      content:"";position:absolute;width:220px;height:220px;right:-112px;bottom:-130px;
+      border-radius:50%;border:34px solid rgba(9,16,12,.08)
+    }
+    .label{font-size:14px;color:rgba(9,16,12,.62);font-weight:800}
+    .balance-row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;position:relative;z-index:1;margin-top:8px}
+    .amount{font-size:38px;font-weight:950;letter-spacing:-1.8px}
+    .trend{background:rgba(9,16,12,.12);padding:9px 11px;border-radius:999px;font-size:12px;font-weight:950;white-space:nowrap}
+    .mini-stats{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+    .mini{background:rgba(255,255,255,.35);border:1px solid rgba(9,16,12,.08);border-radius:18px;padding:12px}
+    .mini span{display:block;font-size:12px;color:rgba(9,16,12,.62);font-weight:900}
+    .mini b{display:block;margin-top:3px;font-size:17px}
+
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin:24px 2px 12px}
+    .section-head h2{font-size:21px;margin:0;letter-spacing:-.55px}
+    .section-head button,.pill-btn{
+      border:0;background:rgba(255,255,255,.08);color:var(--lime);font-weight:900;border-radius:999px;padding:9px 12px;cursor:pointer;
+    }
+
+    .accounts{display:flex;gap:12px;overflow:auto;scrollbar-width:none}
+    .accounts::-webkit-scrollbar{display:none}
+    .account-card{
+      min-width:158px;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.045));
+      border:1px solid var(--line);border-radius:24px;padding:15px;box-shadow:0 16px 30px rgba(0,0,0,.18);
+    }
+    .bank-icon{width:38px;height:38px;border-radius:15px;background:rgba(201,255,46,.14);color:var(--lime);display:grid;place-items:center;margin-bottom:16px;font-weight:950}
+    .account-card span{display:block;color:var(--muted);font-size:12px;font-weight:800}
+    .account-card b{display:block;font-size:18px;margin-top:4px;letter-spacing:-.5px}
+    .account-card small{display:block;margin-top:8px;color:var(--muted2);font-weight:800}
+
+    .dashboard{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .tile{
+      background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:16px;min-height:145px;position:relative;overflow:hidden;
+    }
+    .tile.light{background:#f8fff5;color:var(--black);transform:rotate(-1.3deg);box-shadow:0 16px 36px rgba(0,0,0,.22)}
+    .tile h3{margin:0 0 8px;font-size:15px;letter-spacing:-.25px}
+    .tile p{margin:0;color:var(--muted);font-size:12px;font-weight:750;line-height:1.34}
+    .tile.light p{color:rgba(9,16,12,.6)}
+    .ring{
+      width:92px;height:92px;border-radius:50%;margin:6px auto 10px;
+      background:conic-gradient(var(--lime) var(--goal),rgba(9,16,12,.09) 0);
+      display:grid;place-items:center;position:relative;
+    }
+    .ring:after{content:"";width:68px;height:68px;border-radius:50%;background:#f8fff5;position:absolute}
+    .ring b{position:relative;z-index:1;font-size:20px}
+
+    .quick-grid{display:grid;gap:9px;margin-top:13px}
+    .quick{border:0;border-radius:16px;padding:11px 10px;background:rgba(255,255,255,.07);color:var(--white);font-weight:900;cursor:pointer;display:flex;justify-content:space-between}
+    .quick.plus{background:rgba(201,255,46,.16);color:var(--lime)}
+    .quick.minus{background:rgba(255,107,107,.14);color:#ff9494}
+
+    .transactions{display:grid;gap:10px}
+    .tx{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.04));border:1px solid var(--line);border-radius:22px;padding:10px}
+    .tx .ico{width:48px;height:48px;border-radius:17px;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:none;color:var(--lime)}
+    .tx .ico svg{width:24px;height:24px}
+    .tx .mid{min-width:0;flex:1}
+    .tx strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tx small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+    .tx .money{font-weight:950;font-size:15px;white-space:nowrap}
+    .money.in{color:var(--green)}
+    .money.out{color:#ff8d8d}
+
+    .filter-row{display:flex;gap:8px;overflow:auto;scrollbar-width:none;margin:4px 0 14px}
+    .filter-row::-webkit-scrollbar{display:none}
+    .filter{border:0;border-radius:999px;padding:10px 13px;font-weight:950;white-space:nowrap;background:rgba(255,255,255,.08);color:var(--muted);cursor:pointer}
+    .filter.active{background:var(--lime);color:var(--black)}
+
+    .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .chart-card{background:#f8fff5;color:var(--black);border-radius:28px;padding:15px;min-height:214px;overflow:hidden}
+    .chart-card.dark{background:var(--panel);color:var(--white);border:1px solid var(--line)}
+    .chart-card h3{margin:0 0 12px;font-size:15px;letter-spacing:-.3px}
+    canvas{width:100%;height:150px;display:block}
+    .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .legend span{font-size:11px;font-weight:900;color:var(--muted)}
+    .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;background:var(--lime)}
+    .dot.red{background:var(--red)}
+    .dot.green{background:var(--green)}
+
+    .goals-summary{
+      display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-top:18px
+    }
+    .summary-big{
+      border-radius:30px;background:linear-gradient(135deg,var(--lime),#e7ff75);color:var(--black);padding:18px;overflow:hidden;position:relative;
+    }
+    .summary-big small,.summary-small small{display:block;font-size:12px;font-weight:900;opacity:.65}
+    .summary-big strong{display:block;font-size:30px;letter-spacing:-1.2px;margin-top:7px}
+    .summary-small{
+      border-radius:30px;background:var(--panel);border:1px solid var(--line);padding:18px;color:var(--white);
+    }
+    .summary-small strong{display:block;font-size:22px;letter-spacing:-.8px;margin-top:8px;color:var(--lime)}
+
+    .goal-list{display:grid;gap:12px}
+    .goal-item{
+      background:#f8fff5;color:var(--black);border-radius:30px;padding:15px;display:grid;grid-template-columns:66px 1fr;gap:12px;box-shadow:0 16px 36px rgba(0,0,0,.2);
+    }
+    .goal-art{
+      width:66px;height:66px;border-radius:24px;display:grid;place-items:center;background:linear-gradient(135deg,#eef6ef,#dfe9e1)
+    }
+    .goal-art svg{width:48px;height:48px}
+    .goal-item h3{margin:2px 0 3px;font-size:18px;letter-spacing:-.5px}
+    .goal-item .price{font-size:22px;font-weight:950;letter-spacing:-.8px;margin-top:5px}
+    .progress-line{height:9px;background:rgba(9,16,12,.1);border-radius:999px;overflow:hidden;margin-top:8px}
+    .progress-line i{display:block;height:100%;width:var(--p);background:var(--black);border-radius:999px}
+    .goal-actions{display:flex;gap:8px;margin-top:10px}
+    .goal-actions button{border:0;border-radius:999px;padding:9px 10px;font-weight:950;cursor:pointer;background:#eaf1e8;color:var(--black)}
+    .goal-actions button.primary{background:var(--black);color:#f8fff5}
+
+    .game-card{
+      background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      border-radius:32px;
+      padding:18px;
+      overflow:hidden;
+    }
+    .game-hero{
+      display:grid;grid-template-columns:1fr 94px;gap:10px;align-items:center;
+    }
+    .level-badge{
+      width:94px;height:94px;border-radius:30px;background:var(--lime);color:var(--black);
+      display:grid;place-items:center;text-align:center;font-weight:950;box-shadow:0 16px 35px rgba(201,255,46,.18)
+    }
+    .level-badge span{display:block;font-size:12px}.level-badge b{font-size:32px;line-height:1}
+    .xpbar{height:13px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:14px}
+    .xpbar i{display:block;height:100%;width:var(--xp);background:var(--lime);border-radius:999px}
+    .mission{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.065);border:1px solid var(--line);border-radius:22px;padding:12px;margin-top:10px}
+    .mission .check{width:34px;height:34px;border-radius:13px;background:rgba(201,255,46,.13);display:grid;place-items:center;color:var(--lime);font-weight:950}
+    .mission.done .check{background:var(--lime);color:var(--black)}
+    .mission strong{display:block;font-size:14px}.mission small{display:block;color:var(--muted);margin-top:3px;font-weight:750}
+
+    .nav{
+      position:absolute;left:18px;right:18px;bottom:18px;height:74px;background:rgba(248,255,245,.96);
+      border-radius:30px;display:flex;align-items:center;justify-content:space-around;box-shadow:0 18px 46px rgba(0,0,0,.3);backdrop-filter:blur(18px);z-index:4
+    }
+    .nav button{border:0;background:transparent;color:#1c251f;font-weight:950;cursor:pointer;display:grid;place-items:center;gap:3px;font-size:10px;min-width:52px}
+    .nav button.active{color:#071009}
+    .nav svg{width:22px;height:22px}
+    .fab{
+      width:68px;height:68px;border-radius:50%;background:var(--lime);color:#071009;border:6px solid #071009;
+      transform:translateY(-18px);display:grid;place-items:center;font-size:32px;font-weight:950;cursor:pointer;box-shadow:0 14px 30px rgba(201,255,46,.28)
+    }
+
+    .modal{position:absolute;inset:0;background:rgba(0,0,0,.62);display:none;align-items:flex-end;z-index:10;backdrop-filter:blur(8px)}
+    .modal.open{display:flex}
+    .sheet{width:100%;background:#f8fff5;color:var(--black);border-radius:34px 34px 0 0;padding:18px;box-shadow:0 -18px 60px rgba(0,0,0,.34);max-height:88%;overflow:auto}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .sheet h2{margin:0;font-size:23px;letter-spacing:-.7px}
+    .close{border:0;background:#e8eee7;border-radius:16px;width:42px;height:42px;font-size:22px;cursor:pointer}
+    .form{display:grid;gap:12px}
+    .field label{display:block;font-size:12px;font-weight:950;color:#5f6b61;margin:0 0 6px 3px;text-transform:uppercase;letter-spacing:.4px}
+    input,select{width:100%;border:0;background:#eaf1e8;color:var(--black);border-radius:18px;padding:15px 14px;font-size:16px;font-weight:800;outline:none}
+    .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#eaf1e8;padding:6px;border-radius:19px}
+    .seg button{border:0;border-radius:14px;padding:13px 8px;font-weight:950;background:transparent;color:#5f6b61;cursor:pointer}
+    .seg button.on{background:var(--black);color:#f8fff5}
+    .save{border:0;background:var(--black);color:#f8fff5;border-radius:22px;padding:17px;font-size:16px;font-weight:950;cursor:pointer;margin-top:4px}
+    .save.lime{background:var(--lime);color:var(--black)}
+    .icon-bank{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+    .icon-choice{border:2px solid transparent;background:#eaf1e8;border-radius:22px;padding:10px;display:grid;place-items:center;min-height:72px;cursor:pointer}
+    .icon-choice.active{border-color:var(--black);background:#dff2d8}
+    .icon-choice svg{width:42px;height:42px}
+
+    .floating-calc{position:absolute;right:18px;bottom:106px;width:286px;background:#f8fff5;color:var(--black);border-radius:30px;z-index:30;box-shadow:0 25px 75px rgba(0,0,0,.42);padding:14px;display:none;border:1px solid rgba(9,16,12,.08)}
+    .floating-calc.open{display:block}
+    .calc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:grab}
+    .calc-head strong{font-size:16px;letter-spacing:-.3px}
+    .calc-screen{background:var(--black);color:#f8fff5;border-radius:20px;padding:14px;text-align:right;font-size:30px;font-weight:950;min-height:62px;overflow:hidden;letter-spacing:-1px;margin-bottom:10px}
+    .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .calc-key{border:0;min-height:48px;border-radius:16px;background:#eaf1e8;font-size:18px;font-weight:950;cursor:pointer;color:var(--black)}
+    .calc-key.op{background:var(--black);color:#f8fff5}.calc-key.equal{background:var(--lime);color:var(--black)}.calc-key.clear{background:#ffe0e0;color:#9b1c1c}
+
+    .toast{position:absolute;left:28px;right:28px;bottom:104px;background:#f8fff5;color:var(--black);border-radius:18px;padding:14px 16px;font-weight:900;box-shadow:0 18px 40px rgba(0,0,0,.32);transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s;z-index:40}
+    .toast.show{transform:translateY(0);opacity:1}
+    .empty{color:var(--muted);text-align:center;padding:24px 14px;background:rgba(255,255,255,.045);border-radius:22px;border:1px dashed rgba(255,255,255,.12)}
+    @media(max-height:780px){body{padding:0}.phone{height:100vh;min-height:0;border-radius:0}.app{padding-top:16px}}
+    @media(max-width:380px){.amount{font-size:31px}.floating-calc{left:14px;right:14px;width:auto}.report-grid{grid-template-columns:1fr}.goal-item{grid-template-columns:56px 1fr}.goal-art{width:56px;height:56px}.goal-art svg{width:40px;height:40px}}
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <div class="app" id="appScroll">
+      <section class="view active" id="homeView">
+        <header class="top">
+          <div class="profile">
+            <div class="avatar"><svg viewBox="0 0 24 24" fill="none"><path d="M12 12c2.5 0 4.5-2 4.5-4.5S14.5 3 12 3 7.5 5 7.5 7.5 9.5 12 12 12Zm0 2c-4.2 0-7.5 2.1-7.5 4.7 0 .7.6 1.3 1.3 1.3h12.4c.7 0 1.3-.6 1.3-1.3 0-2.6-3.3-4.7-7.5-4.7Z" fill="currentColor"/></svg></div>
+            <div class="hello"><small>Bom dia, Mateus</small><strong>Suas finanças na mão.</strong></div>
+          </div>
+          <button class="icon-btn" onclick="toggleCalc()" aria-label="Calculadora"><svg viewBox="0 0 24 24" width="23" height="23" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 7h8M8 11h2m3 0h3M8 15h2m3 0h3M8 18h2m3 0h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </header>
+
+        <section class="balance-card">
+          <div class="label">Saldo total das contas</div>
+          <div class="balance-row"><div class="amount" id="totalBalance">R$ 0,00</div><div class="trend" id="monthTrend">↗ 0%</div></div>
+          <div class="mini-stats">
+            <div class="mini"><span>Entradas do mês</span><b id="monthIncome">R$ 0,00</b></div>
+            <div class="mini"><span>Saídas do mês</span><b id="monthExpense">R$ 0,00</b></div>
+          </div>
+        </section>
+
+        <div class="section-head"><h2>Contas bancárias</h2><button onclick="openAccountModal()">+ Conta</button></div>
+        <section class="accounts" id="accounts"></section>
+
+        <div class="section-head"><h2>Visão rápida</h2><button onclick="showView('game')">Game</button></div>
+        <section class="dashboard">
+          <div class="tile light">
+            <h3>Meta mensal</h3>
+            <div class="ring" id="goalRing" style="--goal:0deg"><b id="goalPercent">0%</b></div>
+            <p id="goalText">Defina uma meta e acompanhe seu avanço.</p>
+          </div>
+          <div class="tile">
+            <h3>Ações rápidas</h3>
+            <p>Registre entrada, saída, veja relatórios ou abra a calculadora.</p>
+            <div class="quick-grid">
+              <button class="quick plus" onclick="openTxModal('entrada')">Entrada <span>+</span></button>
+              <button class="quick minus" onclick="openTxModal('saida')">Gasto <span>−</span></button>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-head"><h2>Hoje</h2><button onclick="openTxModal()">+ Novo</button></div>
+        <section class="transactions" id="todayList"></section>
+      </section>
+
+      <section class="view" id="goalsView">
+        <header class="top">
+          <div class="hello"><small>Metas</small><strong>Guardar dinheiro virou plano.</strong></div>
+          <button class="icon-btn" onclick="openGoalAssetModal()" aria-label="Adicionar meta"><svg viewBox="0 0 24 24" width="25" height="25" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+        </header>
+
+        <div class="goals-summary">
+          <div class="summary-big"><small>Total estimado das metas</small><strong id="goalsTotal">R$ 0,00</strong></div>
+          <div class="summary-small"><small>Guardado</small><strong id="goalsSaved">R$ 0</strong></div>
+        </div>
+
+        <div class="section-head"><h2>Suas metas</h2><button onclick="openGoalAssetModal()">+ Meta</button></div>
+        <section class="goal-list" id="goalList"></section>
+      </section>
+
+      <section class="view" id="reportsView">
+        <header class="top">
+          <div class="hello"><small>Relatórios</small><strong>Entenda para onde o dinheiro vai.</strong></div>
+          <button class="icon-btn" onclick="toggleCalc()" aria-label="Calculadora"><svg viewBox="0 0 24 24" width="23" height="23" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 7h8M8 11h2m3 0h3M8 15h2m3 0h3M8 18h2m3 0h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </header>
+
+        <div class="filter-row" id="periodFilters">
+          <button class="filter active" onclick="setPeriod('month',this)">Mês</button>
+          <button class="filter" onclick="setPeriod('day',this)">Dia</button>
+          <button class="filter" onclick="setPeriod('week',this)">Semana</button>
+          <button class="filter" onclick="setPeriod('year',this)">Ano</button>
+          <button class="filter" onclick="setPeriod('all',this)">Tudo</button>
+        </div>
+
+        <section class="report-grid">
+          <div class="chart-card">
+            <h3>Entrada x saída</h3>
+            <canvas id="barChart" width="330" height="180"></canvas>
+            <div class="legend"><span><i class="dot green"></i>Entradas</span><span><i class="dot red"></i>Saídas</span></div>
+          </div>
+          <div class="chart-card dark">
+            <h3>Visão geral</h3>
+            <canvas id="pieChart" width="330" height="180"></canvas>
+            <div class="legend"><span><i class="dot green"></i>Entrada</span><span><i class="dot red"></i>Saída</span></div>
+          </div>
+        </section>
+
+        <div class="section-head"><h2>Lançamentos</h2></div>
+        <div class="filter-row">
+          <button class="filter active" onclick="setTxFilter('all',this)">Tudo</button>
+          <button class="filter" onclick="setTxFilter('entrada',this)">Entradas</button>
+          <button class="filter" onclick="setTxFilter('saida',this)">Saídas</button>
+        </div>
+        <section class="transactions" id="reportList"></section>
+      </section>
+
+      <section class="view" id="gameView">
+        <header class="top">
+          <div class="hello"><small>Modo evolução</small><strong>Finanças em formato de jogo.</strong></div>
+          <button class="icon-btn" onclick="openTxModal('entrada')" aria-label="Adicionar"><svg viewBox="0 0 24 24" width="25" height="25" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+        </header>
+
+        <section class="game-card" style="margin-top:20px">
+          <div class="game-hero">
+            <div>
+              <h2 style="margin:0 0 8px;font-size:24px;letter-spacing:-.8px">Liga do Guardião</h2>
+              <p style="margin:0;color:var(--muted);font-weight:750;line-height:1.35">Cada lançamento, meta cumprida e gasto evitado gera XP financeiro.</p>
+            </div>
+            <div class="level-badge"><div><span>Nível</span><b id="userLevel">1</b></div></div>
+          </div>
+          <div class="xpbar" style="--xp:0%" id="xpBar"><i></i></div>
+          <p style="color:var(--muted);font-size:12px;font-weight:800;margin:8px 0 0" id="xpText">0 XP para o próximo nível</p>
+        </section>
+
+        <div class="section-head"><h2>Missões da semana</h2><button onclick="completeManualMission()">+ XP</button></div>
+        <section id="missions"></section>
+
+        <div class="section-head"><h2>Consciência financeira</h2></div>
+        <section class="game-card">
+          <h3 style="margin:0 0 8px">Regra inteligente</h3>
+          <p style="margin:0;color:var(--muted);font-weight:750;line-height:1.42">Antes de cadastrar uma compra por impulso, pause 20 segundos e responda: isso aproxima ou afasta você de uma meta? Se afastar, transforme o valor em “direcionamento” para uma meta.</p>
+          <button class="save lime" style="margin-top:14px" onclick="openGoalAssetModal()">Criar uma meta agora</button>
+        </section>
+      </section>
+    </div>
+
+    <nav class="nav">
+      <button class="active" data-tab="home" onclick="showView('home')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>Home</button>
+      <button data-tab="goals" onclick="showView('goals')"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.6 7-11.2A7 7 0 1 0 5 9.8C5 16.4 12 21 12 21Z" stroke="currentColor" stroke-width="2"/><path d="M9 10.5 11.2 13 15.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Metas</button>
+      <button class="fab" onclick="openTxModal()" aria-label="Adicionar">+</button>
+      <button data-tab="reports" onclick="showView('reports')"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5m0 14h16M8 16V9m4 7V6m4 10v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Dados</button>
+      <button data-tab="game" onclick="showView('game')"><svg viewBox="0 0 24 24" fill="none"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z" stroke="currentColor" stroke-width="2"/><path d="M7 7H4a3 3 0 0 0 3 3m10-3h3a3 3 0 0 1-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Game</button>
+    </nav>
+
+    <div class="floating-calc" id="floatingCalc">
+      <div class="calc-head" id="calcDrag"><strong>Calculadora</strong><button class="close" onclick="toggleCalc(false)">×</button></div>
+      <div class="calc-screen" id="calcScreen">0</div>
+      <div class="calc-grid">
+        <button class="calc-key clear" onclick="calcClear()">C</button><button class="calc-key" onclick="calcBack()">⌫</button><button class="calc-key op" onclick="calcPress('/')">÷</button><button class="calc-key op" onclick="calcPress('*')">×</button>
+        <button class="calc-key" onclick="calcPress('7')">7</button><button class="calc-key" onclick="calcPress('8')">8</button><button class="calc-key" onclick="calcPress('9')">9</button><button class="calc-key op" onclick="calcPress('-')">−</button>
+        <button class="calc-key" onclick="calcPress('4')">4</button><button class="calc-key" onclick="calcPress('5')">5</button><button class="calc-key" onclick="calcPress('6')">6</button><button class="calc-key op" onclick="calcPress('+')">+</button>
+        <button class="calc-key" onclick="calcPress('1')">1</button><button class="calc-key" onclick="calcPress('2')">2</button><button class="calc-key" onclick="calcPress('3')">3</button><button class="calc-key equal" onclick="calcEqual()">=</button>
+        <button class="calc-key" onclick="calcPress('0')">0</button><button class="calc-key" onclick="calcPress('00')">00</button><button class="calc-key" onclick="calcPress('.')">,</button><button class="calc-key op" onclick="calcPercent()">%</button>
+      </div>
+    </div>
+
+    <div class="modal" id="txModal">
+      <div class="sheet">
+        <div class="sheet-head"><h2>Novo lançamento</h2><button class="close" onclick="closeModal('txModal')">×</button></div>
+        <form class="form" onsubmit="saveTx(event)">
+          <div class="seg"><button type="button" id="typeEntrada" onclick="setTxType('entrada')" class="on">Entrada</button><button type="button" id="typeSaida" onclick="setTxType('saida')">Saída</button></div>
+          <div class="field"><label>Descrição</label><input id="txDesc" required placeholder="Ex: Salário, fatura, gasolina..." /></div>
+          <div class="field"><label>Valor</label><input id="txValue" required inputmode="decimal" placeholder="0,00" /></div>
+          <div class="field"><label>Conta</label><select id="txAccount"></select></div>
+          <div class="field"><label>Categoria</label><select id="txCategory">
+            <option>Salário</option><option>Freela</option><option>Vendas</option><option>Fatura</option><option>Dízimos e ofertas</option><option>Seguro de carro</option><option>Parcela do carro</option><option>Empréstimo</option><option>Valor do MEI</option><option>Internet</option><option>Gasolina</option><option>Alimentação</option><option>Transporte</option><option>Moradia</option><option>Lazer</option><option>Saúde</option><option>Investimentos</option><option>Outros</option><option>Meta realizável</option>
+          </select></div>
+          <button class="save lime">Salvar lançamento</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="accountModal">
+      <div class="sheet">
+        <div class="sheet-head"><h2>Nova conta</h2><button class="close" onclick="closeModal('accountModal')">×</button></div>
+        <form class="form" onsubmit="saveAccount(event)">
+          <div class="field"><label>Nome do banco/carteira</label><input id="accName" required placeholder="Ex: Nubank, Itaú, Dinheiro..." /></div>
+          <div class="field"><label>Saldo inicial</label><input id="accBalance" required inputmode="decimal" placeholder="0,00" /></div>
+          <button class="save">Adicionar conta</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="assetGoalModal">
+      <div class="sheet">
+        <div class="sheet-head"><h2 id="assetGoalTitle">Nova meta</h2><button class="close" onclick="closeModal('assetGoalModal')">×</button></div>
+        <form class="form" onsubmit="saveAssetGoal(event)">
+          <input type="hidden" id="assetGoalId" />
+          <input type="hidden" id="assetGoalIcon" value="car" />
+          <div class="field"><label>Escolha um ícone</label><div class="icon-bank" id="iconBank"></div></div>
+          <div class="field"><label>Nome da meta</label><input id="assetGoalName" required placeholder="Ex: Meu carro, entrada da casa..." /></div>
+          <div class="field"><label>Valor total da meta</label><input id="assetGoalTarget" required inputmode="decimal" placeholder="Ex: 20000,00" /></div>
+          <div class="field"><label>Quanto já está guardado</label><input id="assetGoalSaved" inputmode="decimal" placeholder="0,00" /></div>
+          <div class="field"><label>Quanto vai direcionar por mês</label><input id="assetGoalMonthly" required inputmode="decimal" placeholder="Ex: 500,00" /></div>
+          <div class="field"><label>Conta/banco da meta</label><select id="assetGoalAccount"></select></div>
+          <button class="save lime">Salvar meta</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="goalDetailModal">
+      <div class="sheet">
+        <div class="sheet-head"><h2 id="goalDetailTitle">Meta</h2><button class="close" onclick="closeModal('goalDetailModal')">×</button></div>
+        <div class="form" id="goalDetailContent"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </main>
+
+<script>
+const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const KEY='finango_mobile_v3';
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
+  monthlyGoal:5000, xp:140,
+  accounts:[{id:crypto.randomUUID(),name:'Nubank',balance:2450.70},{id:crypto.randomUUID(),name:'Itaú',balance:1280},{id:crypto.randomUUID(),name:'Dinheiro',balance:220}],
+  assetGoals:[
+    {id:crypto.randomUUID(),icon:'car',name:'Comprar um carro',target:20000,saved:1200,monthly:500,account:'Nubank'},
+    {id:crypto.randomUUID(),icon:'house',name:'Entrada da casa',target:60000,saved:3500,monthly:900,account:'Itaú'},
+    {id:crypto.randomUUID(),icon:'course',name:'Curso profissional',target:2500,saved:350,monthly:250,account:'Nubank'}
+  ],
+  txs:[
+    {id:crypto.randomUUID(),type:'entrada',desc:'Salário',value:3200,account:'Nubank',category:'Salário',date:new Date().toISOString()},
+    {id:crypto.randomUUID(),type:'saida',desc:'Fatura do cartão',value:686.45,account:'Itaú',category:'Fatura',date:new Date().toISOString()},
+    {id:crypto.randomUUID(),type:'saida',desc:'Gasolina',value:120,account:'Nubank',category:'Gasolina',date:new Date(Date.now()-86400000).toISOString()}
+  ]
+};
+let txType='entrada', currentPeriod='month', currentTxFilter='all', calcExp='';
+
+const svgs={
+car:`<svg viewBox="0 0 64 64" fill="none"><rect x="12" y="30" width="40" height="17" rx="6" fill="#B8FF3E"/><path d="M20 30l6-10h16l6 10" fill="#8EB8FF"/><path d="M20 30l6-10h16l6 10H20Z" stroke="#09100C" stroke-width="3" stroke-linejoin="round"/><rect x="12" y="30" width="40" height="17" rx="6" stroke="#09100C" stroke-width="3"/><circle cx="23" cy="48" r="5" fill="#09100C"/><circle cx="43" cy="48" r="5" fill="#09100C"/></svg>`,
+house:`<svg viewBox="0 0 64 64" fill="none"><path d="M10 31 32 13l22 18" fill="#FFD76A"/><path d="M10 31 32 13l22 18" stroke="#09100C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="17" y="29" width="30" height="24" rx="4" fill="#F8FFF5" stroke="#09100C" stroke-width="3"/><rect x="28" y="39" width="8" height="14" rx="2" fill="#8EB8FF" stroke="#09100C" stroke-width="3"/></svg>`,
+course:`<svg viewBox="0 0 64 64" fill="none"><rect x="13" y="12" width="38" height="42" rx="6" fill="#D7B5FF" stroke="#09100C" stroke-width="3"/><path d="M22 24h20M22 33h20M22 42h12" stroke="#09100C" stroke-width="3" stroke-linecap="round"/><circle cx="47" cy="16" r="8" fill="#C9FF2E" stroke="#09100C" stroke-width="3"/></svg>`,
+college:`<svg viewBox="0 0 64 64" fill="none"><path d="M32 10 8 22l24 12 24-12-24-12Z" fill="#8EB8FF" stroke="#09100C" stroke-width="3" stroke-linejoin="round"/><path d="M17 30v13c0 6 30 6 30 0V30" fill="#F8FFF5"/><path d="M17 30v13c0 6 30 6 30 0V30" stroke="#09100C" stroke-width="3"/><path d="M54 23v17" stroke="#09100C" stroke-width="3" stroke-linecap="round"/></svg>`,
+health:`<svg viewBox="0 0 64 64" fill="none"><rect x="10" y="15" width="44" height="36" rx="12" fill="#B8FF3E" stroke="#09100C" stroke-width="3"/><path d="M32 24v18M23 33h18" stroke="#09100C" stroke-width="5" stroke-linecap="round"/></svg>`,
+gym:`<svg viewBox="0 0 64 64" fill="none"><path d="M15 28v8M49 28v8M21 24v16M43 24v16M21 32h22" stroke="#09100C" stroke-width="5" stroke-linecap="round"/><rect x="25" y="20" width="14" height="24" rx="6" fill="#FFB545" stroke="#09100C" stroke-width="3"/></svg>`,
+tech:`<svg viewBox="0 0 64 64" fill="none"><rect x="12" y="16" width="40" height="28" rx="5" fill="#8EB8FF" stroke="#09100C" stroke-width="3"/><path d="M24 53h16M29 44v9M35 44v9" stroke="#09100C" stroke-width="3" stroke-linecap="round"/><path d="M23 29h18" stroke="#F8FFF5" stroke-width="4" stroke-linecap="round"/></svg>`,
+travel:`<svg viewBox="0 0 64 64" fill="none"><path d="M12 39 53 14 40 54 31 37 12 39Z" fill="#C9FF2E" stroke="#09100C" stroke-width="3" stroke-linejoin="round"/></svg>`,
+invest:`<svg viewBox="0 0 64 64" fill="none"><rect x="12" y="12" width="40" height="40" rx="12" fill="#F8FFF5" stroke="#09100C" stroke-width="3"/><path d="M22 40 30 32l6 6 9-14" stroke="#71FF9A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M45 24v11H34" stroke="#09100C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+};
+function iconSvg(k){return svgs[k]||svgs.invest}
+function moneyToNumber(v){return Number(String(v).replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))||0}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(name+'View').classList.add('active');
+  document.querySelectorAll('.nav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.getElementById('appScroll').scrollTo({top:0,behavior:'smooth'});
+  if(name==='reports') setTimeout(drawCharts,60);
+}
+function render(){
+  const total=state.accounts.reduce((s,a)=>s+Number(a.balance),0);
+  const now=new Date();
+  const thisMonth=state.txs.filter(t=>{const d=new Date(t.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()});
+  const income=thisMonth.filter(t=>t.type==='entrada').reduce((s,t)=>s+t.value,0);
+  const expense=thisMonth.filter(t=>t.type==='saida').reduce((s,t)=>s+t.value,0);
+  const trend=income?Math.max(-99,Math.round(((income-expense)/income)*100)):0;
+  totalBalance.textContent=BRL.format(total); monthIncome.textContent=BRL.format(income); monthExpense.textContent=BRL.format(expense);
+  monthTrend.textContent=(trend>=0?'↗ ':'↘ ')+Math.abs(trend)+'%';
+  renderAccounts();renderGoal(total);renderTxs();renderGoals();renderReports();renderGame();fillAccountSelect();drawIconBank();
+}
+function renderAccounts(){accounts.innerHTML=state.accounts.map((a,i)=>`<article class="account-card"><div class="bank-icon">${a.name[0].toUpperCase()}</div><span>${a.name}</span><b>${BRL.format(a.balance)}</b><small>${i===0?'Conta principal':'Conta conectada'}</small></article>`).join('')}
+function renderGoal(total){const pct=state.monthlyGoal?Math.min(100,Math.round(total/state.monthlyGoal*100)):0;goalRing.style.setProperty('--goal',pct*3.6+'deg');goalPercent.textContent=pct+'%';goalText.textContent=`${BRL.format(total)} de ${BRL.format(state.monthlyGoal)} alcançados.`}
+function txIcon(cat){return iconSvg(cat==='Gasolina'||cat==='Parcela do carro'||cat==='Seguro de carro'?'car':cat==='Saúde'?'health':cat==='Internet'||cat==='Investimentos'?'tech':cat==='Meta realizável'?'invest':'course')}
+function txHTML(t){return `<article class="tx"><div class="ico">${txIcon(t.category)}</div><div class="mid"><strong>${t.desc}</strong><small>${t.category} • ${t.account} • ${new Date(t.date).toLocaleDateString('pt-BR')}</small></div><div class="money ${t.type==='entrada'?'in':'out'}">${t.type==='entrada'?'+':'−'} ${BRL.format(t.value)}</div></article>`}
+function renderTxs(){const today=new Date().toDateString();const sorted=[...state.txs].sort((a,b)=>new Date(b.date)-new Date(a.date));const todayTx=sorted.filter(t=>new Date(t.date).toDateString()===today);todayList.innerHTML=todayTx.length?todayTx.slice(0,4).map(txHTML).join(''):`<div class="empty">Nenhum lançamento hoje. Toque em + para começar.</div>`}
+function renderGoals(){
+  const target=state.assetGoals.reduce((s,g)=>s+g.target,0), saved=state.assetGoals.reduce((s,g)=>s+g.saved,0);
+  goalsTotal.textContent=BRL.format(target); goalsSaved.textContent=BRL.format(saved);
+  goalList.innerHTML=state.assetGoals.length?state.assetGoals.map(g=>{
+    const pct=Math.min(100,Math.round(g.saved/g.target*100)); const remaining=Math.max(0,g.target-g.saved); const months=g.monthly?Math.ceil(remaining/g.monthly):0;
+    return `<article class="goal-item"><div class="goal-art">${iconSvg(g.icon)}</div><div><h3>${g.name}</h3><small>${g.account} • ${pct}% concluído</small><div class="price">${BRL.format(g.target)}</div><div class="progress-line" style="--p:${pct}%"><i></i></div><small>Guardado: ${BRL.format(g.saved)} • ${g.monthly?BRL.format(g.monthly)+'/mês':''} ${months?'• '+months+' meses':''}</small><div class="goal-actions"><button class="primary" onclick="directToGoal('${g.id}')">Direcionar</button><button onclick="editAssetGoal('${g.id}')">Editar</button><button onclick="deleteAssetGoal('${g.id}')">Excluir</button></div></div></article>`
+  }).join(''):`<div class="empty">Crie uma meta com ícone, valor total e plano mensal.</div>`;
+}
+function inPeriod(t){
+  const d=new Date(t.date), now=new Date();
+  if(currentPeriod==='all') return true;
+  if(currentPeriod==='day') return d.toDateString()===now.toDateString();
+  if(currentPeriod==='week'){const diff=(now-d)/86400000;return diff>=0&&diff<=7}
+  if(currentPeriod==='month') return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+  if(currentPeriod==='year') return d.getFullYear()===now.getFullYear();
+}
+function filteredTxs(){return state.txs.filter(t=>inPeriod(t)).filter(t=>currentTxFilter==='all'||t.type===currentTxFilter).sort((a,b)=>new Date(b.date)-new Date(a.date))}
+function renderReports(){reportList.innerHTML=filteredTxs().length?filteredTxs().map(txHTML).join(''):`<div class="empty">Nenhum lançamento nesse filtro.</div>`;drawCharts()}
+function setPeriod(p,btn){currentPeriod=p;document.querySelectorAll('#periodFilters .filter').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderReports()}
+function setTxFilter(f,btn){currentTxFilter=f;btn.parentElement.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderReports()}
+function drawCharts(){
+  const b=document.getElementById('barChart'), p=document.getElementById('pieChart'); if(!b||!p)return;
+  const ctx=b.getContext('2d'), w=b.width,h=b.height; ctx.clearRect(0,0,w,h);
+  const labels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const data=labels.map((_,m)=>{let inc=0,out=0;state.txs.forEach(t=>{const d=new Date(t.date);if(d.getMonth()===m&&d.getFullYear()===new Date().getFullYear()){t.type==='entrada'?inc+=t.value:out+=t.value}});return{inc,out}});
+  const max=Math.max(1,...data.flatMap(d=>[d.inc,d.out])); const bw=8,gap=9; ctx.font='18px -apple-system'; ctx.fillStyle='#9aa79d'; ctx.fillText('R$',4,18);
+  data.forEach((d,i)=>{const x=18+i*(bw*2+gap), ih=(d.inc/max)*110, oh=(d.out/max)*110; ctx.fillStyle='#71ff9a'; roundRect(ctx,x,140-ih,bw,ih,5,true); ctx.fillStyle='#ff6b6b'; roundRect(ctx,x+bw+3,140-oh,bw,oh,5,true); ctx.fillStyle='#6d7a70'; ctx.font='10px -apple-system'; ctx.fillText(labels[i][0],x,168)});
+  const pc=p.getContext('2d'), pw=p.width,ph=p.height; pc.clearRect(0,0,pw,ph);
+  const inc=state.txs.filter(t=>inPeriod(t)&&t.type==='entrada').reduce((s,t)=>s+t.value,0), out=state.txs.filter(t=>inPeriod(t)&&t.type==='saida').reduce((s,t)=>s+t.value,0), total=inc+out||1;
+  let start=-Math.PI/2; [['#71ff9a',inc],['#ff6b6b',out]].forEach(([c,v])=>{pc.beginPath();pc.moveTo(pw/2,80);pc.fillStyle=c;pc.arc(pw/2,80,62,start,start+(v/total)*Math.PI*2);pc.closePath();pc.fill();start+=(v/total)*Math.PI*2});
+  pc.beginPath();pc.fillStyle='#111914';pc.arc(pw/2,80,34,0,Math.PI*2);pc.fill();pc.fillStyle='#f7fff8';pc.font='bold 16px -apple-system';pc.textAlign='center';pc.fillText(Math.round((inc/total)*100)+'%',pw/2,86);pc.textAlign='start';
+}
+function roundRect(ctx,x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill)ctx.fill()}
+function renderGame(){
+  const level=Math.floor(state.xp/250)+1, xp=state.xp%250, pct=Math.round(xp/250*100);
+  userLevel.textContent=level; xpBar.style.setProperty('--xp',pct+'%'); xpText.textContent=`${250-xp} XP para o próximo nível`;
+  const hasIncome=state.txs.some(t=>inPeriod(t)&&t.type==='entrada'), hasGoal=state.assetGoals.length>0, saved=state.assetGoals.some(g=>g.saved>0);
+  missions.innerHTML=[
+    ['Registrar uma entrada no período','Ganhe clareza sobre sua renda',hasIncome],
+    ['Manter pelo menos uma meta ativa','Transforme desejo em plano',hasGoal],
+    ['Direcionar dinheiro para uma meta','Troque impulso por avanço',saved]
+  ].map(m=>`<article class="mission ${m[2]?'done':''}"><div class="check">${m[2]?'✓':'+'}</div><div><strong>${m[0]}</strong><small>${m[1]}</small></div></article>`).join('');
+}
+function completeManualMission(){state.xp+=35;save();toast('+35 XP financeiro')}
+function fillAccountSelect(){const opts=state.accounts.map(a=>`<option>${a.name}</option>`).join(''); txAccount.innerHTML=opts; assetGoalAccount.innerHTML=opts}
+function openModal(id){document.getElementById(id).classList.add('open')} function closeModal(id){document.getElementById(id).classList.remove('open')}
+function openTxModal(type){setTxType(type||'entrada');txDesc.value='';txValue.value='';openModal('txModal')}
+function setTxType(type){txType=type;typeEntrada.classList.toggle('on',type==='entrada');typeSaida.classList.toggle('on',type==='saida')}
+function saveTx(e){e.preventDefault();const value=moneyToNumber(txValue.value);if(value<=0)return toast('Informe um valor válido.');const acc=state.accounts.find(a=>a.name===txAccount.value);if(!acc)return toast('Cadastre uma conta.');acc.balance+=txType==='entrada'?value:-value;state.txs.unshift({id:crypto.randomUUID(),type:txType,desc:txDesc.value.trim(),value,account:txAccount.value,category:txCategory.value,date:new Date().toISOString()});state.xp+=20;closeModal('txModal');save();toast('Lançamento salvo. +20 XP')}
+function openAccountModal(){accName.value='';accBalance.value='';openModal('accountModal')}
+function saveAccount(e){e.preventDefault();state.accounts.push({id:crypto.randomUUID(),name:accName.value.trim(),balance:moneyToNumber(accBalance.value)});closeModal('accountModal');save();toast('Conta adicionada.')}
+function drawIconBank(active='car'){iconBank.innerHTML=Object.keys(svgs).map(k=>`<button type="button" class="icon-choice ${k===active?'active':''}" onclick="selectIcon('${k}')">${iconSvg(k)}</button>`).join('');assetGoalIcon.value=active}
+function selectIcon(k){assetGoalIcon.value=k;document.querySelectorAll('.icon-choice').forEach(b=>b.classList.remove('active'));event.currentTarget.classList.add('active')}
+function openGoalAssetModal(){assetGoalTitle.textContent='Nova meta';assetGoalId.value='';assetGoalName.value='';assetGoalTarget.value='';assetGoalSaved.value='';assetGoalMonthly.value='';drawIconBank('car');fillAccountSelect();openModal('assetGoalModal')}
+function editAssetGoal(id){const g=state.assetGoals.find(x=>x.id===id);if(!g)return;assetGoalTitle.textContent='Editar meta';assetGoalId.value=g.id;assetGoalName.value=g.name;assetGoalTarget.value=String(g.target).replace('.',',');assetGoalSaved.value=String(g.saved).replace('.',',');assetGoalMonthly.value=String(g.monthly).replace('.',',');fillAccountSelect();assetGoalAccount.value=g.account;drawIconBank(g.icon);openModal('assetGoalModal')}
+function saveAssetGoal(e){e.preventDefault();const payload={id:assetGoalId.value||crypto.randomUUID(),icon:assetGoalIcon.value,name:assetGoalName.value.trim(),target:moneyToNumber(assetGoalTarget.value),saved:moneyToNumber(assetGoalSaved.value),monthly:moneyToNumber(assetGoalMonthly.value),account:assetGoalAccount.value};if(!payload.name||payload.target<=0)return toast('Preencha a meta corretamente.');const idx=state.assetGoals.findIndex(g=>g.id===payload.id);if(idx>=0)state.assetGoals[idx]=payload;else state.assetGoals.unshift(payload);state.xp+=30;closeModal('assetGoalModal');save();toast('Meta salva. +30 XP')}
+function directToGoal(id){const g=state.assetGoals.find(x=>x.id===id);if(!g)return;const value=Number(g.monthly||0);if(value<=0)return toast('Defina valor mensal.');const acc=state.accounts.find(a=>a.name===g.account);if(acc)acc.balance-=value;g.saved+=value;state.txs.unshift({id:crypto.randomUUID(),type:'saida',desc:`Direcionado para ${g.name}`,value,account:g.account,category:'Meta realizável',date:new Date().toISOString()});state.xp+=50;save();toast(`${BRL.format(value)} direcionado. +50 XP`)}
+function deleteAssetGoal(id){if(!confirm('Excluir esta meta?'))return;state.assetGoals=state.assetGoals.filter(g=>g.id!==id);save();toast('Meta excluída.')}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2400)}
+function toggleCalc(force){const el=floatingCalc;if(force===false)el.classList.remove('open');else el.classList.toggle('open')}
+function calcDisplay(){calcScreen.textContent=calcExp?calcExp.replace(/\*/g,'×').replace(/\//g,'÷').replace(/\./g,','):'0'}
+function calcPress(v){if(calcExp.length>18)return;if(v==='.'&&calcExp.split(/[+\-*/]/).pop().includes('.'))return;calcExp+=v;calcDisplay()}
+function calcClear(){calcExp='';calcDisplay()} function calcBack(){calcExp=calcExp.slice(0,-1);calcDisplay()}
+function calcPercent(){try{calcExp=String(Function('"use strict";return('+calcExp+')')()/100);calcDisplay()}catch(e){toast('Conta inválida.')}}
+function calcEqual(){try{if(!/^[0-9+\-*/.() ]+$/.test(calcExp))throw Error();calcExp=String(Math.round(Function('"use strict";return('+calcExp+')')()*100)/100);calcDisplay()}catch(e){toast('Conta inválida.')}}
+(function dragCalc(){const box=floatingCalc,handle=calcDrag;let sx=0,sy=0,ox=0,oy=0,drag=false;handle.addEventListener('pointerdown',e=>{drag=true;sx=e.clientX;sy=e.clientY;const r=box.getBoundingClientRect(),p=box.parentElement.getBoundingClientRect();ox=r.left-p.left;oy=r.top-p.top;handle.setPointerCapture(e.pointerId)});handle.addEventListener('pointermove',e=>{if(!drag)return;const p=box.parentElement.getBoundingClientRect();const nx=Math.max(10,Math.min(p.width-box.offsetWidth-10,ox+e.clientX-sx));const ny=Math.max(10,Math.min(p.height-box.offsetHeight-10,oy+e.clientY-sy));box.style.left=nx+'px';box.style.top=ny+'px';box.style.right='auto';box.style.bottom='auto'});handle.addEventListener('pointerup',()=>drag=false)})();
+render();
+</script>
+</body>
+</html>
